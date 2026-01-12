@@ -7,6 +7,7 @@ export default function GlobalState({ children }) {
   const [loading, setLoading] = useState(false);
   const [recipeList, setRecipeList] = useState([]);
   const [recipeDetailData, setRecipeDetailData] = useState(null);
+  const [favoriteList, setFavoriteList] = useState([]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -30,6 +31,47 @@ export default function GlobalState({ children }) {
     }
   }
 
+  function handleAddToFavorites(currItem) {
+    console.log(currItem);
+    let cpyfavoriteList = [...favoriteList];
+    const idx = cpyfavoriteList.findIndex((item) => item.id === currItem.id);
+
+    if (idx == -1) {
+      cpyfavoriteList.push(currItem);
+    }
+    else {
+      cpyfavoriteList.splice(idx);
+    }
+
+    setFavoriteList(cpyfavoriteList);
+
+    console.log(favoriteList)
+
+  }
+
+  async function fetchRandomRecipes() {
+    const keywords = ["pizza", "pasta", "chicken", "salad", "burger"];
+    const randomKeyword =
+      keywords[Math.floor(Math.random() * keywords.length)];
+
+    try {
+      setLoading(true);
+
+      const res = await fetch(
+        `https://forkify-api.herokuapp.com/api/v2/recipes?search=${randomKeyword}`
+      );
+      const data = await res.json();
+
+      setRecipeList(data?.data?.recipes || []);
+    } catch (error) {
+      console.error(error);
+      setRecipeList([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
   return (
     <GlobalContext.Provider
       value={{
@@ -38,8 +80,11 @@ export default function GlobalState({ children }) {
         handleSubmit,
         recipeList,
         loading,
-        recipeDetailData, 
-        setRecipeDetailData
+        recipeDetailData,
+        setRecipeDetailData,
+        handleAddToFavorites,
+        favoriteList,
+        fetchRandomRecipes
       }}
     >
       {children}
